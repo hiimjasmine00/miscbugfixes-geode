@@ -81,12 +81,14 @@ namespace MiscBugfixes {
             [layer](web::WebResponse* response) {
                 if(!response->ok()) {
                     onNoticesFailed(std::to_string(response->code()));
+                    s_requestTask = std::nullopt;
                     return *response;
                 }
 
                 auto result = response->json();
                 if(!result) {
                     onNoticesFailed("Invalid JSON");
+                    s_requestTask = std::nullopt;
                     return *response;
                 }
 
