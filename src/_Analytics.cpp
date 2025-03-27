@@ -102,10 +102,10 @@ namespace MiscBugfixes {
                     auto alert = FLAlertLayer::create(Mod::get()->getName().c_str(), res.unwrap(), "OK");
                     alert->m_scene = layer;
                     alert->show();
-                    layer->release();
                 }
 
                 s_requestTask = std::nullopt;
+                layer->release();
 
                 return *response;
             }
