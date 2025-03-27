@@ -60,22 +60,19 @@ namespace MiscBugfixes {
         #endif
     }
 
-    void onNoticesFailed(CCLayer* layer, const std::string& error = "") {
+    void onNoticesFailed(const std::string& error = "") {
         log::warn("Fetching important notices failed: {}", error);
         s_requestTask = std::nullopt;
-        layer->release();
     }
 
     std::string getUserAgent() {
         return fmt::format("Misc Bugfixes {} / Geode {}", Mod::get()->getVersion().toVString(true), Loader::get()->getVersion().toVString(true));
     }
 
-    void loadImportantNotices(CCLayer* layer) {
+    void loadImportantNotices(Ref<CCLayer> layer) {
         static bool hasBeenCalled = false;
         if(hasBeenCalled) return;
         hasBeenCalled = true;
-
-        layer->retain();
 
         auto url = fmt::format("https://geometrydash.eu/mods/miscbugfixes/_api/importantNotices/?platform={}&version={}&loader={}&wine={}&os={}", GEODE_PLATFORM_NAME, Mod::get()->getVersion().toVString(true), Loader::get()->getVersion().toVString(true), getWineVersion(), getOSVersion());
         log::info("Fetching important notices from: {}", url);
@@ -83,13 +80,13 @@ namespace MiscBugfixes {
         s_requestTask = web::WebRequest().userAgent(getUserAgent()).get(url).map(
             [layer](web::WebResponse* response) {
                 if(!response->ok()) {
-                    onNoticesFailed(layer, std::to_string(response->code()));
+                    onNoticesFailed(std::to_string(response->code()));
                     return *response;
                 }
 
                 auto result = response->json();
                 if(!result) {
-                    onNoticesFailed(layer, "Invalid JSON");
+                    onNoticesFailed("Invalid JSON");
                     return *response;
                 }
 
@@ -105,7 +102,6 @@ namespace MiscBugfixes {
                 }
 
                 s_requestTask = std::nullopt;
-                layer->release();
 
                 return *response;
             }
